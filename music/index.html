@@ -1,11 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
+<style>
+    .nowlistening {
+    text-align: center;
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    }
+</style>
+
+<div class="nowlistening">
+    <h1>Currently Playing:</h1  >
+    <p><span id="song"></span></p>
+    <img id="album-art" alt="Album art"/>
+</div>
+
+<script type="text/javascript">
+    let user = 'clayden_';
+    let url = 'https://lastfm-last-played.biancarosa.com.br/' + user + '/latest-song';
+    let songElement = document.querySelector('#song');
+    let albumArtElement = document.querySelector('#album-art');
+
+    fetch(url)
+        .then(response => response.json())
+        .then(json => {
+            const trackName = json['track']['name'];
+            const artistName = json['track']['artist']['#text'];
+            const albumImage = json['track']['image'].find(img => img['size'] === 'large')['#text'];
+
+            songElement.innerHTML = `${trackName} - ${artistName}`;
+            albumArtElement.src = albumImage;
+        })
+        .catch(error => {
+            console.error('Error fetching the latest song:', error);
+        });
+</script>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>draw</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f3c4d2;
+        }
+        .drawing-container {
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #fb54b6;
+            background-color: #fff;
+        }
+        .controls {
+            margin-top: 10px;
+        }
+        .controls select,
+        .controls input {
+            margin-right: 10px;
+        }
+        .controls button {
+            margin-left: 10px;
+        }
+        .slider-container {
+            margin-top: 10px;
+        }
+        .slider-container label {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="drawing-container">
+        <canvas id="drawingCanvas" width="500" height="400"></canvas>
+        <div class="controls">
+            <label for="colorPicker" style="color: #0da7da;">Color:</label>
+            <input type="color" id="colorPicker" value="#000000" style="color: #fb54b6; background-color: #ffffff; border-color: #fb54b6;">
+            
+            <label for="brushSize" style="color: #0da7da;">Brush Size:</label>
+            <select id="brushSize" style="color: #fb54b6; background-color: #ffffff; border-color: #fb54b6;">
+                <option value="1">1px</option> 
+                <option value="2">2px</option> 
+                <option value="4">4px</option> 
+                <option value="8">8px</option> 
+                <option value="16">16px</option>
+            </select>
+
+            <button id="eraseButton" style="color: #fb54b6; background-color: #ffffff; border-color: #fb54b6;" >Erase</button>
+            <button onclick="clearCanvas()" style="color: #fb54b6; background-color: #ffffff; border-color: #fb54b6;" >Clear</button>
+            <button onclick="undo()" style="color: #fb54b6; background-color: #ffffff; border-color: #fb54b6;" >Undo</button>
+
+            <h3 style="color: #fb54b6;"> Canvas Size</h3>
+            <div class="slider-container">
+                <label for="canvasWidth" style="color: #0da7da;">Width:</label>
+                <input type="range" id="canvasWidth" min="100" max="1000" value="500" step="10" oninput="resizeCanvas()">
+                <span id="widthValue" style="color: #0da7da;">500</span>
+            </div>
+            <div class="slider-container">
+                <label for="canvasHeight" style="color: #0da7da;">Height:</label>
+                <input type="range" id="canvasHeight" min="100" max="700" value="400" step="10" oninput="resizeCanvas()">
+                <span id="heightValue" style="color: #0da7da;">400</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let isErasing = false;
+        let brushColor = '#000000';
+        let brushSize = 2;
+        let history = []; // To store canvas history for undo
+        let historyIndex = -1; // To track the current position in history
+
+        // Set initial drawing settings
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = brushSize;
+
+        // Function to start drawing or erasing
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            draw(e); // Draw or erase immediately on mousedown
+        });
+
+        // Function to stop drawing or erasing
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            ctx.beginPath(); // Start a new path to avoid connecting lines
+            saveHistory(); // Save current state to history after each stroke
+        });
+
+        // Function to handle drawing or erasing
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing) {
+                draw(e);
+            }
+        });
+
+        // Draw or erase function
+        function draw(e) {
+            if (isErasing) {
+                ctx.globalCompositeOperation = 'destination-out'; // Erase mode
+                ctx.strokeStyle = 'rgba(0,0,0,1)'; // Eraser color (black)
+            } else {
+                ctx.globalCompositeOperation = 'source-over'; // Normal drawing mode
+                ctx.strokeStyle = brushColor;
+            }
+            ctx.lineWidth = brushSize;
+            ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        }
+
+        // Handle color picker change
+        document.getElementById('colorPicker').addEventListener('input', (e) => {
+            brushColor = e.target.value;
+        });
+
+        // Handle brush size change
+        document.getElementById('brushSize').addEventListener('change', (e) => {
+            brushSize = e.target.value;
+        });
+
+        // Function to clear the canvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            history = []; // Clear history when the canvas is cleared
+            historyIndex = -1; // Reset history index
+        }
+
+        // Handle erase button click
+        document.getElementById('eraseButton').addEventListener('click', () => {
+            isErasing = !isErasing; // Toggle between drawing and erasing
+            document.getElementById('eraseButton').textContent = isErasing ? 'Draw' : 'Erase'; // Change button text
+        });
+
+        // Save the current state of the canvas to history
+        function saveHistory() {
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1); // Remove future steps if new drawing is done
+            }
+            history.push(canvas.toDataURL()); // Store the current canvas state
+            historyIndex++; // Move to the next position in history
+        }
+
+        // Undo function
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--; // Move to the previous state
+                const previousState = history[historyIndex];
+                const img = new Image();
+                img.src = previousState;
+                img.onload = function () {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear current canvas
+                    ctx.drawImage(img, 0, 0); // Draw the previous state
+                };
+            }
+        }
+
+        // Handle Ctrl + Z (Undo shortcut)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault(); // Prevent default browser undo behavior
+                undo(); // Call undo function
+            }
+        });
+
+        // Resize the canvas based on user input from sliders
+        function resizeCanvas() {
+            const newWidth = document.getElementById('canvasWidth').value;
+            const newHeight = document.getElementById('canvasHeight').value;
+
+            // Update displayed values next to the sliders
+            document.getElementById('widthValue').textContent = newWidth;
+            document.getElementById('heightValue').textContent = newHeight;
+
+            // Resize the canvas
+            const canvasData = canvas.toDataURL(); // Get the current canvas content
+
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            ctx.drawImage(document.createElement('img'), 0, 0); // Redraw content after resizing
+
+            // Restore the canvas content if needed
+            if (canvasData) {
+                const img = new Image();
+                img.src = canvasData;
+                img.onload = function () {
+                    ctx.drawImage(img, 0, 0);
+                };
+            }
+
+            saveHistory(); // Save resized state to history
+        }
+    </script>
+</body>
+</html>
