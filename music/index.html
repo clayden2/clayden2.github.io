@@ -1,36 +1,79 @@
-<style>
-    .nowlistening {
-    text-align: center;
-    position: absolute;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Set a background image for the entire page */
+        body {
+            background-image: url('/assets/bg.jpg'); /* Replace with your image URL */
+            background-size: cover; /* Ensure the image covers the whole screen */
+            background-position: fill; /* Center the background image */
+            margin: 0; /* Remove default body margin */
+            font-family: Arial, sans-serif; /* Set a simple font */
+            color: white; /* Make text color white to contrast with the background */
+        }
 
-<div class="nowlistening">
-    <h1>Currently Playing:</h1  >
-    <p><span id="song"></span></p>
-    <img id="album-art" alt="Album art"/>
-</div>
+        .nowlistening-container {
+            background-color: rgba(110, 143, 222, 0.95); /* Light blue with transparency */
+            padding: 40px; /* Increase padding */
+            border: 2px solid #fb54b6; /* Matching pink border around the box */
+            border-radius: 8px; /* Optional: rounds the corners */
+            width: 400px; /* Make the box wider */
+            margin: 80px auto; /* Center the box with more margin from the top */
+            text-align: center;
+        }
 
-<script type="text/javascript">
-    let user = 'clayden_';
-    let url = 'https://lastfm-last-played.biancarosa.com.br/' + user + '/latest-song';
-    let songElement = document.querySelector('#song');
-    let albumArtElement = document.querySelector('#album-art');
+        .nowlistening {
+            margin-top: 30px; /* Increase space between header and content */
+        }
 
-    fetch(url)
-        .then(response => response.json())
-        .then(json => {
-            const trackName = json['track']['name'];
-            const artistName = json['track']['artist']['#text'];
-            const albumImage = json['track']['image'].find(img => img['size'] === 'large')['#text'];
+        #album-art {
+            width: 250px; /* Increase album art size */
+            height: 250px;
+            margin-top: 20px; /* Increase space above album art */
+        }
 
-            songElement.innerHTML = `${trackName} - ${artistName}`;
-            albumArtElement.src = albumImage;
-        })
-        .catch(error => {
-            console.error('Error fetching the latest song:', error);
-        });
-</script>
+        h1 {
+            color: #a83578; /* Pink color for the title */
+            font-size: 36px; /* Increase font size for the header */
+        }
+
+        p {
+            color: #a83578; /* Pink color for the song text */
+            font-size: 24px; /* Increase font size for the song text */
+        }
+    </style>
+    <title>Now Playing</title>
+</head>
+<body>
+    <div class="nowlistening-container">
+        <div class="nowlistening">
+            <h1>Currently Playing:</h1>
+            <p><span id="song"></span></p>
+            <img id="album-art" alt="Album art"/>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        let user = 'clayden_';
+        let url = 'https://lastfm-last-played.biancarosa.com.br/' + user + '/latest-song';
+        let songElement = document.querySelector('#song');
+        let albumArtElement = document.querySelector('#album-art');
+
+        fetch(url)
+            .then(response => response.json())
+            .then(json => {
+                const trackName = json['track']['name'];
+                const artistName = json['track']['artist']['#text'];
+                const albumImage = json['track']['image'].find(img => img['size'] === 'large')['#text'];
+
+                songElement.innerHTML = `${trackName} - ${artistName}`;
+                albumArtElement.src = albumImage;
+            })
+            .catch(error => {
+                console.error('Error fetching the latest song:', error);
+            });
+    </script>
+</body>
+</html>
