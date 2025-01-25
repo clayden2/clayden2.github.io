@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* Set a background image for the entire page */
         body {
             background-image: url('/assets/bg.jpg'); /* Replace with your image URL */
             background-size: cover; /* Ensure the image covers the whole screen */
@@ -29,14 +28,19 @@
         }
 
         #album-art {
-            width: 250px; /* Increase album art size */
-            height: 250px;
+            width: 375px; /* Increase album art size */
+            height: 375x;
             margin-top: 20px; /* Increase space above album art */
         }
 
         h1 {
             color: #a83578; /* Pink color for the title */
             font-size: 36px; /* Increase font size for the header */
+        }
+
+        a {
+            color: #ffb5e0; /* Pink color for the title */
+            font-size: 20px; /* Increase font size for the header */
         }
 
         p {
@@ -49,9 +53,12 @@
 <body>
     <div class="nowlistening-container">
         <div class="nowlistening">
-            <h1>Currently Playing:</h1>
+            <h1>Most Recently Played:</h1>
             <p><span id="song"></span></p>
             <img id="album-art" alt="Album art"/>
+            <div class="rym" style="font-size: 20px;">
+                <a href="https://rateyourmusic.com/~clayden"> My RateYourMusic Account </a></div>
+            </div>
         </div>
     </div>
 
